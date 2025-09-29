@@ -1,24 +1,50 @@
 import js from "@eslint/js";
-import globals from "globals";
 import svelte from "eslint-plugin-svelte";
-import tseslint from "typescript-eslint";
+import svelteParser from "svelte-eslint-parser";
+import ts from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 
+/** @type {import('eslint').Linter.Config[]} */
 export default [
-  {
-    ignores: ["build/**", "node_modules/**"],
-  },
+  // Общие рекомендации для JavaScript
   js.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...svelte.configs["flat/recommended"],
+
+  // Рекомендации для TypeScript
   {
+    files: ["**/*.ts"],
     languageOptions: {
-      globals: {
-        ...globals.browser,
+      parser: tsParser,
+      parserOptions: {
+        project: "./tsconfig.json",
       },
     },
-    rules: {
-      "no-unused-vars": "warn",
-      "no-undef": "error",
+    plugins: {
+      "@typescript-eslint": ts,
     },
+    rules: {
+      ...ts.configs.recommended.rules,
+    },
+  },
+
+  // Рекомендации для Svelte
+  {
+    files: ["**/*.svelte"],
+    languageOptions: {
+      parser: svelteParser,
+      parserOptions: {
+        extraFileExtensions: [".svelte"],
+      },
+    },
+    plugins: {
+      svelte,
+    },
+    rules: {
+      ...svelte.configs["flat/recommended"][0].rules,
+    },
+  },
+
+  // Игнорирование файлов
+  {
+    ignores: ["build/**", "node_modules/**"],
   },
 ];
