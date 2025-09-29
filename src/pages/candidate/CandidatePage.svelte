@@ -5,11 +5,13 @@
   import { Spinner } from "../../shared/ui";
   import type { Candidate } from "../../shared/types";
 
-  interface Props {
-    candidateId: string;
+  interface RouteParams {
+    id?: string;
   }
 
-  let { candidateId }: Props = $props();
+  let { params }: { params?: RouteParams } = $props();
+
+  let candidateId = $state<string | undefined>(params?.id);
   let candidate = $state<Candidate | null>(null);
   let loading = $state(true);
   let error = $state<string | null>(null);
@@ -29,12 +31,15 @@
         await candidateStore.loadCandidates();
       }
 
-      const foundCandidate = candidateStore.getCandidateById(candidateId);
-
-      if (foundCandidate) {
-        candidate = foundCandidate;
+      if (!candidateId) {
+        error = "Некорректный параметр маршрута";
       } else {
-        error = "Кандидат не найден";
+        const foundCandidate = candidateStore.getCandidateById(candidateId);
+        if (foundCandidate) {
+          candidate = foundCandidate;
+        } else {
+          error = "Кандидат не найден";
+        }
       }
     } catch (err) {
       error = err instanceof Error ? err.message : "Ошибка загрузки кандидата";

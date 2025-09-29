@@ -3,12 +3,13 @@
   import { jobStore } from "../../entities/job/store";
   import JobFilter from "../../features/job-filter/JobFilter.svelte";
   import JobList from "../../widgets/job-list/JobList.svelte";
-  import { Spinner } from "../../shared/ui";
+  import { Spinner, Card, Button } from "../../shared/ui";
   import type { FilterOptions, Job } from "../../shared/types";
   import type { JobState } from "../../entities/job/store";
 
   let filters: FilterOptions = $state({});
   let filteredJobs: Job[] = $state([]);
+  let visibleCount = $state(12);
   let jobStoreState: JobState = $state({ jobs: [], loading: false, error: null, filters: {} });
 
   onMount(() => {
@@ -33,6 +34,11 @@
   function handleFiltersChange(newFilters: FilterOptions) {
     filters = newFilters;
     jobStore.setFilters(newFilters);
+    visibleCount = 12;
+  }
+
+  function showMore() {
+    visibleCount += 12;
   }
 </script>
 
@@ -42,24 +48,38 @@
     <p>Управление вакансиями и поиск кандидатов</p>
   </div>
 
-  <JobFilter {filters} onFiltersChange={handleFiltersChange} />
+  <div class="jobs-page__layout">
+    <aside class="jobs-page__filters">
+      <Card>
+        <h3>Фильтры</h3>
+        <JobFilter {filters} onFiltersChange={handleFiltersChange} />
+      </Card>
+    </aside>
 
-  {#if jobStoreState.loading}
-    <div class="jobs-page__loading">
-      <Spinner size="lg" />
-      <p>Загрузка вакансий...</p>
-    </div>
-  {:else if jobStoreState.error}
-    <div class="jobs-page__error">
-      <p>Ошибка загрузки: {jobStoreState.error}</p>
-    </div>
-  {:else if filteredJobs.length === 0}
-    <div class="jobs-page__empty">
-      <p>Вакансии не найдены</p>
-    </div>
-  {:else}
-    <JobList jobs={filteredJobs} />
-  {/if}
+    <section class="jobs-page__content">
+      {#if jobStoreState.loading}
+        <div class="jobs-page__loading">
+          <Spinner size="lg" />
+          <p>Загрузка вакансий...</p>
+        </div>
+      {:else if jobStoreState.error}
+        <div class="jobs-page__error">
+          <p>Ошибка загрузки: {jobStoreState.error}</p>
+        </div>
+      {:else if filteredJobs.length === 0}
+        <div class="jobs-page__empty">
+          <p>Вакансии не найдены</p>
+        </div>
+      {:else}
+        <JobList jobs={filteredJobs.slice(0, visibleCount)} />
+        {#if filteredJobs.length > visibleCount}
+          <div class="jobs-page__more">
+            <Button variant="secondary" onclick={showMore}>Показать ещё</Button>
+          </div>
+        {/if}
+      {/if}
+    </section>
+  </div>
 </div>
 
 <style>
@@ -87,6 +107,24 @@
     margin: 0;
   }
 
+  .jobs-page__layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1rem;
+  }
+
+  .jobs-page__filters {
+    position: sticky;
+    top: 5rem;
+    height: fit-content;
+  }
+
+  .jobs-page__more {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
   .jobs-page__loading,
   .jobs-page__error,
   .jobs-page__empty {
@@ -96,6 +134,12 @@
     justify-content: center;
     padding: 3rem;
     text-align: center;
+  }
+
+  @media (max-width: 900px) {
+    .jobs-page__layout {
+      grid-template-columns: 1fr;
+    }
   }
 
   .jobs-page__loading {

@@ -1,7 +1,14 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+  "extends": "./.svelte-kit/tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.svelte",
+    "src/**/*.js",
+    "svelte.config.js",
+    "vite.config.ts"
   ]
 }

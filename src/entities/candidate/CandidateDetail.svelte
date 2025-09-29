@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Candidate } from "../../shared/types";
-  import { Card, Button } from "../../shared/ui";
+  import { Card, Button, Input } from "../../shared/ui";
   import { formatPhone, formatDateTime } from "../../shared/lib/utils";
   import { candidateStore } from "./store";
 
@@ -24,6 +24,11 @@
 
   function handleBack() {
     window.history.back();
+  }
+  let notesDraft = $state(candidate.notes || "");
+
+  function saveNotes() {
+    candidateStore.updateNotes(candidate.id, notesDraft.trim());
   }
 </script>
 
@@ -105,14 +110,15 @@
       </span>
     </div>
 
-    {#if candidate.notes}
-      <div class="candidate-detail__notes">
-        <h3>Заметки</h3>
-        <div class="candidate-detail__notes-content">
-          {candidate.notes}
+    <div class="candidate-detail__notes">
+      <h3>Заметки</h3>
+      <div class="candidate-detail__notes-content">
+        <textarea class="candidate-detail__notes-textarea" bind:value={notesDraft} rows="5"></textarea>
+        <div class="candidate-detail__notes-actions">
+          <Button variant="primary" size="sm" onclick={saveNotes}>Сохранить</Button>
         </div>
       </div>
-    {/if}
+    </div>
 
     <div class="candidate-detail__meta">
       <div class="candidate-detail__meta-item">

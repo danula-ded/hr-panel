@@ -14,6 +14,9 @@
 
   let searchValue = $state(filters.search || "");
   let gradeValue = $state(filters.grade || "");
+  let salaryMin = $state(filters.salary?.min?.toString() || "");
+  let salaryMax = $state(filters.salary?.max?.toString() || "");
+  let skillsText = $state((filters.skills || []).join(", "));
 
   // Debounced search to avoid too many updates
   const debouncedSearch = debounce((...args: unknown[]) => {
@@ -30,6 +33,26 @@
       ...filters,
       grade: (gradeValue as JobGrade) || undefined,
     });
+  }
+
+  function handleSalaryChange() {
+    const s = {
+      min: salaryMin ? parseInt(salaryMin.toString()) : undefined,
+      max: salaryMax ? parseInt(salaryMax.toString()) : undefined,
+    };
+    if (s.min === undefined && s.max === undefined) {
+      onFiltersChange({ ...filters, salary: undefined });
+      return;
+    }
+    onFiltersChange({ ...filters, salary: s as { min: number; max: number } });
+  }
+
+  function handleSkillsChange() {
+    const list = skillsText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    onFiltersChange({ ...filters, skills: list.length ? list : undefined });
   }
 
   function clearFilters() {
@@ -55,6 +78,31 @@
       bind:value={gradeValue}
       placeholder="Все грейды"
       onchange={handleGradeChange}
+    />
+  </div>
+
+  <div class="job-filter__salary">
+    <Input
+      type="number"
+      placeholder="Мин. зп"
+      bind:value={salaryMin}
+      oninput={handleSalaryChange}
+    />
+    <span class="job-filter__sep">-</span>
+    <Input
+      type="number"
+      placeholder="Макс. зп"
+      bind:value={salaryMax}
+      oninput={handleSalaryChange}
+    />
+  </div>
+
+  <div class="job-filter__skills">
+    <Input
+      type="text"
+      placeholder="Навыки (через запятую)"
+      bind:value={skillsText}
+      oninput={handleSkillsChange}
     />
   </div>
 

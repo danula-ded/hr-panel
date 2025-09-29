@@ -1,7 +1,7 @@
 import { writable } from "svelte/store";
 import type { Job, FilterOptions } from "../../shared/types";
 import { storage } from "../../shared/lib/storage";
-import { mockJobs } from "../../shared/config/data";
+import { mockJobs } from "../../shared/mocks/data";
 
 export interface JobState {
   jobs: Job[];
@@ -84,6 +84,23 @@ function createJobStore() {
           // Grade filter
           if (state.filters.grade && job.grade !== state.filters.grade) {
             return false;
+          }
+
+          // Salary filter
+          if (state.filters.salary) {
+            const { min, max } = state.filters.salary;
+            const jobMin = job.salary.min;
+            const jobMax = job.salary.max;
+            if (min !== undefined && jobMax < min) return false;
+            if (max !== undefined && jobMin > max) return false;
+          }
+
+          // Skills filter (on requirements)
+          if (state.filters.skills && state.filters.skills.length > 0) {
+            const skillsLower = state.filters.skills.map((s) => s.toLowerCase());
+            const jobReqLower = job.requirements.map((r) => r.toLowerCase());
+            const hasAll = skillsLower.every((s) => jobReqLower.some((r) => r.includes(s)));
+            if (!hasAll) return false;
           }
 
           return true;

@@ -16,6 +16,7 @@
   let stageValue = $state(filters.stage || "");
   let experienceMin = $state(filters.experience?.min?.toString() || "");
   let experienceMax = $state(filters.experience?.max?.toString() || "");
+  let skillsText = $state((filters.skills || []).join(", "));
 
   // Debounced search to avoid too many updates
   const debouncedSearch = debounce((...args: unknown[]) => {
@@ -56,6 +57,14 @@
         experience: undefined,
       });
     }
+  }
+
+  function handleSkillsChange() {
+    const list = skillsText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    onFiltersChange({ ...filters, skills: list.length ? list : undefined });
   }
 
   function clearFilters() {
@@ -99,6 +108,15 @@
       placeholder="Макс. опыт"
       bind:value={experienceMax}
       oninput={handleExperienceChange}
+    />
+  </div>
+
+  <div class="candidate-filter__skills">
+    <Input
+      type="text"
+      placeholder="Навыки (через запятую)"
+      bind:value={skillsText}
+      oninput={handleSkillsChange}
     />
   </div>
 

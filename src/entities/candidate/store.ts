@@ -1,7 +1,7 @@
 import { writable } from "svelte/store";
 import type { Candidate, FilterOptions } from "../../shared/types";
 import { storage } from "../../shared/lib/storage";
-import { mockCandidates } from "../../shared/config/data";
+import { mockCandidates } from "../../shared/mocks/data";
 
 export interface CandidateState {
   candidates: Candidate[];
@@ -9,6 +9,7 @@ export interface CandidateState {
   error: string | null;
   filters: FilterOptions;
   shortlist: string[]; // Array of candidate IDs
+  priorityByJob: Record<string, string[]>; // jobId -> candidateIds order
 }
 
 const initialState: CandidateState = {
@@ -17,6 +18,7 @@ const initialState: CandidateState = {
   error: null,
   filters: {},
   shortlist: [],
+  priorityByJob: {},
 };
 
 function createCandidateStore() {
@@ -33,12 +35,14 @@ function createCandidateStore() {
         // Try to load from cache first
         const cachedCandidates = storage.getItem<Candidate[]>("candidates");
         const cachedShortlist = storage.getItem<string[]>("shortlist", []) || [];
+        const cachedPriority = storage.getItem<Record<string, string[]>>("priorityByJob", {}) || {};
 
         if (cachedCandidates && cachedCandidates.length > 0) {
           update((state) => ({
             ...state,
             candidates: cachedCandidates,
             shortlist: cachedShortlist,
+            priorityByJob: cachedPriority,
             loading: false,
           }));
 
@@ -53,6 +57,7 @@ function createCandidateStore() {
             ...state,
             candidates: mockCandidates,
             shortlist: cachedShortlist,
+            priorityByJob: cachedPriority,
             loading: false,
           }));
           storage.setItem("candidates", mockCandidates);
@@ -111,6 +116,19 @@ function createCandidateStore() {
             }
           }
 
+          // Skills filter
+          if (state.filters.skills && state.filters.skills.length > 0) {
+            const skillsLower = state.filters.skills.map((s) => s.toLowerCase());
+            const candSkillsLower = candidate.skills.map((s) => s.toLowerCase());
+            const hasAll = skillsLower.every((s) => candSkillsLower.some((r) => r.includes(s)));
+            if (!hasAll) return false;
+          }
+
+          // Job filter (show candidates for a particular job)
+          if (state.filters.jobId && candidate.jobId !== state.filters.jobId) {
+            return false;
+          }
+
           return true;
         });
 
@@ -118,6 +136,35 @@ function createCandidateStore() {
       });
 
       return filteredCandidates;
+    },
+
+    // Priority management per job
+    getPriorityForJob: (jobId: string): string[] => {
+      let list: string[] = [];
+      update((state) => {
+        list = state.priorityByJob[jobId] || [];
+        return state;
+      });
+      return list;
+    },
+
+    setPriorityForJob: (jobId: string, orderedCandidateIds: string[]) => {
+      update((state) => {
+        const updated = { ...state.priorityByJob, [jobId]: orderedCandidateIds };
+        storage.setItem("priorityByJob", updated);
+        return { ...state, priorityByJob: updated };
+      });
+    },
+
+    // Update candidate notes
+    updateNotes: (id: string, notes: string) => {
+      update((state) => {
+        const updatedCandidates = state.candidates.map((c) =>
+          c.id === id ? { ...c, notes, updatedAt: new Date().toISOString() } : c,
+        );
+        storage.setItem("candidates", updatedCandidates);
+        return { ...state, candidates: updatedCandidates };
+      });
     },
 
     // Get candidate by ID

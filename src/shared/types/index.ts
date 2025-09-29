@@ -56,6 +56,12 @@ export interface FilterOptions {
     min: number;
     max: number;
   };
+  salary?: {
+    min: number;
+    max: number;
+  };
+  skills?: string[];
+  jobId?: string;
 }
 
 export interface PaginationOptions {

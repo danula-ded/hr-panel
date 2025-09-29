@@ -9,7 +9,14 @@ lerna-debug.log*
 
 node_modules
 dist
+.env
+.env.*
+.env.local
+.svelte-kit
+.vscode
+.eslintcache
 dist-ssr
+build
 *.local
 
 # Editor directories and files

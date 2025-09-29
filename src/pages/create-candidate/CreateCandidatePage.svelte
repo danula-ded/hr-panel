@@ -9,7 +9,7 @@
     const newCandidate = candidateStore.addCandidate(candidateData);
 
     // Redirect to the new candidate's page
-    window.location.href = `/candidate/${newCandidate.id}`;
+    import("$app/navigation").then(({ goto }) => goto(`/candidate/${newCandidate.id}`));
   }
 
   function handleCancel() {

@@ -24,13 +24,13 @@
     candidateStore.toggleShortlist(candidate.id);
   }
 
+  import { goto } from "$app/navigation";
   function handleEdit() {
-    // This will be handled by the parent component
-    window.location.href = `/edit-candidate/${candidate.id}`;
+    goto(`/edit-candidate/${candidate.id}`);
   }
 
   function handleView() {
-    window.location.href = `/candidate/${candidate.id}`;
+    goto(`/candidate/${candidate.id}`);
   }
 </script>
 

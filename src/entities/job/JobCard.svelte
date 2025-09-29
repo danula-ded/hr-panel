@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Job } from "../../shared/types";
   import { Card } from "../../shared/ui";
+  import { goto } from "$app/navigation";
   import { formatSalary } from "../../shared/lib/utils";
 
   interface Props {
@@ -13,9 +14,12 @@
   const salaryText = $derived(
     formatSalary(job.salary.min, job.salary.max, job.salary.currency),
   );
+  function handleOpen() {
+    goto(`/jobs/${job.id}`);
+  }
 </script>
 
-<Card class="job-card {className}" clickable>
+<Card class="job-card {className}" clickable onclick={handleOpen}>
   <div class="job-card__header">
     <h3 class="job-card__title">{job.title}</h3>
     <span class="job-card__grade">{job.grade}</span>

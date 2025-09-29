@@ -1,24 +1,25 @@
 <script lang="ts">
-  import Router from "svelte-spa-router";
-  import { routes } from "./router";
-  import AppProvider from "./providers/AppProvider.svelte";
+  import AppProvider from "../app/providers/AppProvider.svelte";
+  import "../app.css";
+  import { goto } from "$app/navigation";
+  import { storage } from "../shared/lib/storage";
+  let { children }: { children: any } = $props();
 
-  // Navigation state
   let currentPath = $state("/");
   let showMobileMenu = $state(false);
 
-  function handleRouteChange(event: CustomEvent) {
-    currentPath = event.detail.location;
-    showMobileMenu = false;
-  }
-
   function navigateTo(path: string) {
-    window.location.hash = path;
+    goto(path);
     showMobileMenu = false;
   }
 
   function toggleMobileMenu() {
     showMobileMenu = !showMobileMenu;
+  }
+
+  function clearCache() {
+    storage.clear();
+    location.reload();
   }
 </script>
 
@@ -31,20 +32,10 @@
         </div>
 
         <nav class="app__nav">
-          <a
-            href="#/jobs"
-            class="app__nav-link"
-            class:active={currentPath === "/" || currentPath === "/jobs"}
-            onclick={() => navigateTo("/jobs")}
-          >
+          <a href="/jobs" class="app__nav-link" onclick={(e) => { e.preventDefault(); navigateTo("/jobs"); }}>
             Вакансии
           </a>
-          <a
-            href="#/candidates"
-            class="app__nav-link"
-            class:active={currentPath === "/candidates"}
-            onclick={() => navigateTo("/candidates")}
-          >
+          <a href="/candidates" class="app__nav-link" onclick={(e) => { e.preventDefault(); navigateTo("/candidates"); }}>
             Кандидаты
           </a>
         </nav>
@@ -58,24 +49,15 @@
           <span></span>
           <span></span>
         </button>
+        <button class="app__clear-cache" onclick={clearCache} aria-label="Clear cache">Очистить кэш</button>
       </div>
 
       {#if showMobileMenu}
         <nav class="app__mobile-nav">
-          <a
-            href="#/jobs"
-            class="app__mobile-nav-link"
-            class:active={currentPath === "/" || currentPath === "/jobs"}
-            onclick={() => navigateTo("/jobs")}
-          >
+          <a href="/jobs" class="app__mobile-nav-link" onclick={(e) => { e.preventDefault(); navigateTo("/jobs"); }}>
             Вакансии
           </a>
-          <a
-            href="#/candidates"
-            class="app__mobile-nav-link"
-            class:active={currentPath === "/candidates"}
-            onclick={() => navigateTo("/candidates")}
-          >
+          <a href="/candidates" class="app__mobile-nav-link" onclick={(e) => { e.preventDefault(); navigateTo("/candidates"); }}>
             Кандидаты
           </a>
         </nav>
@@ -83,7 +65,7 @@
     </header>
 
     <main class="app__main">
-      <Router {routes} onroutechange={handleRouteChange} />
+      {@render children()}
     </main>
 
     <footer class="app__footer">
@@ -143,11 +125,6 @@
     color: var(--color-text);
   }
 
-  .app__nav-link.active {
-    color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
-  }
-
   .app__mobile-menu-toggle {
     display: none;
     flex-direction: column;
@@ -190,10 +167,6 @@
     color: var(--color-text);
   }
 
-  .app__mobile-nav-link.active {
-    color: var(--color-primary);
-  }
-
   .app__main {
     flex: 1;
     min-height: calc(100vh - 8rem);
@@ -226,3 +199,4 @@
     }
   }
 </style>
+

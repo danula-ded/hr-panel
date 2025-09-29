@@ -5,11 +5,8 @@
   import { Spinner } from "../../shared/ui";
   import type { Candidate } from "../../shared/types";
 
-  interface Props {
-    candidateId: string;
-  }
-
-  let { candidateId }: Props = $props();
+  let { params }: { params: { id: string } } = $props();
+  let candidateId = $state<string | undefined>(params.id);
   let candidate = $state<Candidate | null>(null);
   let loading = $state(true);
   let error = $state<string | null>(null);
@@ -29,12 +26,16 @@
         await candidateStore.loadCandidates();
       }
 
-      const foundCandidate = candidateStore.getCandidateById(candidateId);
-
-      if (foundCandidate) {
-        candidate = foundCandidate;
+      if (!candidateId) {
+        error = "Некорректный параметр маршрута";
       } else {
-        error = "Кандидат не найден";
+        const foundCandidate = candidateStore.getCandidateById(candidateId);
+
+        if (foundCandidate) {
+          candidate = foundCandidate;
+        } else {
+          error = "Кандидат не найден";
+        }
       }
     } catch (err) {
       error = err instanceof Error ? err.message : "Ошибка загрузки кандидата";
@@ -49,14 +50,13 @@
     if (candidate) {
       candidateStore.updateCandidate(candidate.id, candidateData);
 
-      // Redirect to the candidate's page
-      window.location.href = `/candidate/${candidate.id}`;
+      import("$app/navigation").then(({ goto }) => goto(`/candidate/${candidate.id}`));
     }
   }
 
   function handleCancel() {
     if (candidate) {
-      window.location.href = `/candidate/${candidate.id}`;
+      import("$app/navigation").then(({ goto }) => goto(`/candidate/${candidate.id}`));
     } else {
       window.history.back();
     }
