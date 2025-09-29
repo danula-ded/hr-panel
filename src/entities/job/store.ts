@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import type { Job, FilterOptions } from "../../shared/types";
 import { storage } from "../../shared/lib/storage";
 import { mockJobs } from "../../shared/mocks/data";
@@ -55,73 +55,51 @@ function createJobStore() {
 
     // Set filters
     setFilters: (filters: FilterOptions) => {
-      update((state) => ({ ...state, filters }));
+      update((state) => {
+        const same = JSON.stringify(state.filters) === JSON.stringify(filters);
+        if (same) return state;
+        return { ...state, filters };
+      });
     },
 
     // Get filtered jobs
     getFilteredJobs: (): Job[] => {
-      let filteredJobs: Job[] = [];
-
-      update((state) => {
-        filteredJobs = state.jobs.filter((job) => {
-          // Search filter
-          if (state.filters.search) {
-            const searchTerm = state.filters.search.toLowerCase();
-            const searchableText = [
-              job.title,
-              job.company,
-              job.location,
-              job.description,
-            ]
-              .join(" ")
-              .toLowerCase();
-
-            if (!searchableText.includes(searchTerm)) {
-              return false;
-            }
-          }
-
-          // Grade filter
-          if (state.filters.grade && job.grade !== state.filters.grade) {
-            return false;
-          }
-
-          // Salary filter
-          if (state.filters.salary) {
-            const { min, max } = state.filters.salary;
-            const jobMin = job.salary.min;
-            const jobMax = job.salary.max;
-            if (min !== undefined && jobMax < min) return false;
-            if (max !== undefined && jobMin > max) return false;
-          }
-
-          // Skills filter (on requirements)
-          if (state.filters.skills && state.filters.skills.length > 0) {
-            const skillsLower = state.filters.skills.map((s) => s.toLowerCase());
-            const jobReqLower = job.requirements.map((r) => r.toLowerCase());
-            const hasAll = skillsLower.every((s) => jobReqLower.some((r) => r.includes(s)));
-            if (!hasAll) return false;
-          }
-
-          return true;
-        });
-
-        return state;
+      const state = get({ subscribe });
+      return state.jobs.filter((job) => {
+        if (state.filters.search) {
+          const searchTerm = state.filters.search.toLowerCase();
+          const searchableText = [
+            job.title,
+            job.company,
+            job.location,
+            job.description,
+          ]
+            .join(" ")
+            .toLowerCase();
+          if (!searchableText.includes(searchTerm)) return false;
+        }
+        if (state.filters.grade && job.grade !== state.filters.grade) return false;
+        if (state.filters.salary) {
+          const { min, max } = state.filters.salary;
+          const jobMin = job.salary.min;
+          const jobMax = job.salary.max;
+          if (min !== undefined && jobMax < min) return false;
+          if (max !== undefined && jobMin > max) return false;
+        }
+        if (state.filters.skills && state.filters.skills.length > 0) {
+          const skillsLower = state.filters.skills.map((s) => s.toLowerCase());
+          const jobReqLower = job.requirements.map((r) => r.toLowerCase());
+          const hasAll = skillsLower.every((s) => jobReqLower.some((r) => r.includes(s)));
+          if (!hasAll) return false;
+        }
+        return true;
       });
-
-      return filteredJobs;
     },
 
     // Get job by ID
     getJobById: (id: string): Job | undefined => {
-      let job: Job | undefined;
-
-      update((state) => {
-        job = state.jobs.find((j) => j.id === id);
-        return state;
-      });
-
-      return job;
+      const state = get({ subscribe });
+      return state.jobs.find((j) => j.id === id);
     },
 
     // Clear cache

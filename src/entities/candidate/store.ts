@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import type { Candidate, FilterOptions } from "../../shared/types";
 import { storage } from "../../shared/lib/storage";
 import { mockCandidates } from "../../shared/mocks/data";
@@ -76,76 +76,50 @@ function createCandidateStore() {
 
     // Set filters
     setFilters: (filters: FilterOptions) => {
-      update((state) => ({ ...state, filters }));
+      update((state) => {
+        const same = JSON.stringify(state.filters) === JSON.stringify(filters);
+        if (same) return state;
+        return { ...state, filters };
+      });
     },
 
     // Get filtered candidates
     getFilteredCandidates: (): Candidate[] => {
-      let filteredCandidates: Candidate[] = [];
-
-      update((state) => {
-        filteredCandidates = state.candidates.filter((candidate) => {
-          // Search filter
-          if (state.filters.search) {
-            const searchTerm = state.filters.search.toLowerCase();
-            const searchableText = [
-              candidate.firstName,
-              candidate.lastName,
-              candidate.email,
-              candidate.position,
-              candidate.skills.join(" "),
-            ]
-              .join(" ")
-              .toLowerCase();
-
-            if (!searchableText.includes(searchTerm)) {
-              return false;
-            }
-          }
-
-          // Stage filter
-          if (state.filters.stage && candidate.stage !== state.filters.stage) {
-            return false;
-          }
-
-          // Experience filter
-          if (state.filters.experience) {
-            const { min, max } = state.filters.experience;
-            if (candidate.experience < min || candidate.experience > max) {
-              return false;
-            }
-          }
-
-          // Skills filter
-          if (state.filters.skills && state.filters.skills.length > 0) {
-            const skillsLower = state.filters.skills.map((s) => s.toLowerCase());
-            const candSkillsLower = candidate.skills.map((s) => s.toLowerCase());
-            const hasAll = skillsLower.every((s) => candSkillsLower.some((r) => r.includes(s)));
-            if (!hasAll) return false;
-          }
-
-          // Job filter (show candidates for a particular job)
-          if (state.filters.jobId && candidate.jobId !== state.filters.jobId) {
-            return false;
-          }
-
-          return true;
-        });
-
-        return state;
+      const state = get({ subscribe });
+      return state.candidates.filter((candidate) => {
+        if (state.filters.search) {
+          const searchTerm = state.filters.search.toLowerCase();
+          const searchableText = [
+            candidate.firstName,
+            candidate.lastName,
+            candidate.email,
+            candidate.position,
+            candidate.skills.join(" "),
+          ]
+            .join(" ")
+            .toLowerCase();
+          if (!searchableText.includes(searchTerm)) return false;
+        }
+        if (state.filters.stage && candidate.stage !== state.filters.stage) return false;
+        if (state.filters.experience) {
+          const { min, max } = state.filters.experience;
+          if (candidate.experience < min || candidate.experience > max) return false;
+        }
+        if (state.filters.skills && state.filters.skills.length > 0) {
+          const skillsLower = state.filters.skills.map((s) => s.toLowerCase());
+          const candSkillsLower = candidate.skills.map((s) => s.toLowerCase());
+          const hasAll = skillsLower.every((s) => candSkillsLower.some((r) => r.includes(s)));
+          if (!hasAll) return false;
+        }
+        if (state.filters.jobId && candidate.jobId !== state.filters.jobId) return false;
+        return true;
       });
-
-      return filteredCandidates;
     },
 
     // Priority management per job
     getPriorityForJob: (jobId: string): string[] => {
-      let list: string[] = [];
-      update((state) => {
-        list = state.priorityByJob[jobId] || [];
-        return state;
-      });
-      return list;
+      const state = get({ subscribe });
+      return state.priorityByJob[jobId] || [];
     },
 
     setPriorityForJob: (jobId: string, orderedCandidateIds: string[]) => {
@@ -169,14 +143,8 @@ function createCandidateStore() {
 
     // Get candidate by ID
     getCandidateById: (id: string): Candidate | undefined => {
-      let candidate: Candidate | undefined;
-
-      update((state) => {
-        candidate = state.candidates.find((c) => c.id === id);
-        return state;
-      });
-
-      return candidate;
+      const state = get({ subscribe });
+      return state.candidates.find((c) => c.id === id);
     },
 
     // Add candidate
@@ -244,28 +212,14 @@ function createCandidateStore() {
 
     // Check if candidate is in shortlist
     isInShortlist: (candidateId: string): boolean => {
-      let isInShortlist = false;
-
-      update((state) => {
-        isInShortlist = state.shortlist.includes(candidateId);
-        return state;
-      });
-
-      return isInShortlist;
+      const state = get({ subscribe });
+      return state.shortlist.includes(candidateId);
     },
 
     // Get shortlisted candidates
     getShortlistedCandidates: (): Candidate[] => {
-      let shortlistedCandidates: Candidate[] = [];
-
-      update((state) => {
-        shortlistedCandidates = state.candidates.filter((candidate) =>
-          state.shortlist.includes(candidate.id),
-        );
-        return state;
-      });
-
-      return shortlistedCandidates;
+      const state = get({ subscribe });
+      return state.candidates.filter((candidate) => state.shortlist.includes(candidate.id));
     },
 
     // Clear cache
