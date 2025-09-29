@@ -96,19 +96,23 @@
   </div>
 
   <div class="candidate-filter__experience">
-    <Input
-      type="number"
-      placeholder="Мин. опыт"
-      bind:value={experienceMin}
-      oninput={handleExperienceChange}
-    />
-    <span class="candidate-filter__experience-separator">-</span>
-    <Input
-      type="number"
-      placeholder="Макс. опыт"
-      bind:value={experienceMax}
-      oninput={handleExperienceChange}
-    />
+    <div class="candidate-filter__row">
+      <Input
+        type="number"
+        placeholder="Мин. опыт"
+        bind:value={experienceMin}
+        oninput={handleExperienceChange}
+        class="candidate-filter__experience-input"
+      />
+      <span class="candidate-filter__experience-separator">-</span>
+      <Input
+        type="number"
+        placeholder="Макс. опыт"
+        bind:value={experienceMax}
+        oninput={handleExperienceChange}
+        class="candidate-filter__experience-input"
+      />
+    </div>
   </div>
 
   <div class="candidate-filter__skills">
@@ -130,13 +134,13 @@
 <style>
   .candidate-filter {
     display: flex;
-    gap: 1rem;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
     padding: 1rem;
     background-color: var(--color-background);
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    margin-bottom: 1.5rem;
   }
 
   .candidate-filter__search {
@@ -153,19 +157,35 @@
     align-items: center;
     gap: 0.5rem;
     min-width: 200px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  /* width of number inputs is defined inside the input itself; keep CSS minimal */
+  .candidate-filter__row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .candidate-filter__experience-input {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
 
   .candidate-filter__experience-separator {
     color: var(--color-text-muted);
     font-weight: 500;
+    align-self: center;
+    flex: 0 0 auto;
+    padding: 0 0.25rem;
+    user-select: none;
   }
-
-  .candidate-filter__actions {
-    display: flex;
-    align-items: center;
-  }
+  
+  .candidate-filter__actions { display: flex; align-items: center; justify-content: center; }
 
   .candidate-filter__clear {
     background: none;
@@ -184,25 +204,19 @@
   }
 
   @media (max-width: 1024px) {
-    .candidate-filter {
-      flex-wrap: wrap;
-    }
-
-    .candidate-filter__experience {
-      min-width: 150px;
-    }
+    .candidate-filter__experience { min-width: 150px; }
   }
 
   @media (max-width: 768px) {
-    .candidate-filter {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
     .candidate-filter__search,
     .candidate-filter__stage,
-    .candidate-filter__experience {
-      min-width: auto;
+    .candidate-filter__experience { min-width: auto; }
+    .candidate-filter__row {
+      flex-wrap: wrap;
+    }
+    .candidate-filter__experience-input {
+      min-width: 0;
+      flex-basis: 100px;
     }
   }
 </style>

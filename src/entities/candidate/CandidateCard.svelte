@@ -24,9 +24,21 @@
     candidateStore.toggleShortlist(candidate.id);
   }
 
+  function handleToggleShortlistClick(event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    handleToggleShortlist();
+  }
+
   import { goto } from "$app/navigation";
   function handleEdit() {
     goto(`/edit-candidate/${candidate.id}`);
+  }
+
+  function handleEditClick(event: MouseEvent) {
+    event.stopPropagation();
+    event.preventDefault();
+    handleEdit();
   }
 
   function handleView() {
@@ -97,11 +109,11 @@
       <Button
         variant={isInShortlist ? "secondary" : "primary"}
         size="sm"
-        onclick={handleToggleShortlist}
+        onclick={handleToggleShortlistClick}
       >
         {isInShortlist ? "Убрать из шортлиста" : "В шортлист"}
       </Button>
-      <Button variant="ghost" size="sm" onclick={handleEdit}>
+      <Button variant="ghost" size="sm" onclick={handleEditClick}>
         Редактировать
       </Button>
     </div>

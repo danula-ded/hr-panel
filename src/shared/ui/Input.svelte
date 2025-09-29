@@ -83,6 +83,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .input-label {
@@ -107,6 +109,9 @@
     transition:
       border-color 0.2s ease,
       box-shadow 0.2s ease;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   .input:focus {

@@ -82,19 +82,21 @@
   </div>
 
   <div class="job-filter__salary">
-    <Input
-      type="number"
-      placeholder="Мин. зп"
-      bind:value={salaryMin}
-      oninput={handleSalaryChange}
-    />
-    <span class="job-filter__sep">-</span>
-    <Input
-      type="number"
-      placeholder="Макс. зп"
-      bind:value={salaryMax}
-      oninput={handleSalaryChange}
-    />
+    <div class="job-filter__row">
+      <Input
+        type="number"
+        placeholder="Мин. зп"
+        bind:value={salaryMin}
+        oninput={handleSalaryChange}
+      />
+      <span class="job-filter__sep">-</span>
+      <Input
+        type="number"
+        placeholder="Макс. зп"
+        bind:value={salaryMax}
+        oninput={handleSalaryChange}
+      />
+    </div>
   </div>
 
   <div class="job-filter__skills">
@@ -114,28 +116,23 @@
 <style>
   .job-filter {
     display: flex;
-    gap: 1rem;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
     padding: 1rem;
     background-color: var(--color-background);
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    margin-bottom: 1.5rem;
   }
 
-  .job-filter__search {
-    flex: 1;
-    min-width: 200px;
-  }
+  .job-filter__search { min-width: 200px; }
 
   .job-filter__grade {
     min-width: 150px;
   }
 
-  .job-filter__actions {
-    display: flex;
-    align-items: center;
-  }
+  .job-filter__row { display: flex; align-items: center; gap: 0.5rem; }
+  .job-filter__actions { display: flex; align-items: center; justify-content: center; }
 
   .job-filter__clear {
     background: none;
@@ -154,14 +151,7 @@
   }
 
   @media (max-width: 768px) {
-    .job-filter {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
     .job-filter__search,
-    .job-filter__grade {
-      min-width: auto;
-    }
+    .job-filter__grade { min-width: auto; }
   }
 </style>

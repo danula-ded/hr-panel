@@ -33,12 +33,6 @@ function createJobStore() {
 
         if (cachedJobs && cachedJobs.length > 0) {
           update((state) => ({ ...state, jobs: cachedJobs, loading: false }));
-
-          // Load fresh data in background
-          setTimeout(() => {
-            update((state) => ({ ...state, jobs: mockJobs }));
-            storage.setItem("jobs", mockJobs);
-          }, 100);
         } else {
           // Load from mock data
           update((state) => ({ ...state, jobs: mockJobs, loading: false }));
@@ -100,6 +94,24 @@ function createJobStore() {
     getJobById: (id: string): Job | undefined => {
       const state = get({ subscribe });
       return state.jobs.find((j) => j.id === id);
+    },
+
+    // Add new job
+    addJob: (
+      job: Omit<Job, "id" | "createdAt" | "updatedAt">,
+    ): Job => {
+      const newJob: Job = {
+        ...job,
+        id: Math.random().toString(36).substr(2, 9),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      update((state) => {
+        const updated = [...state.jobs, newJob];
+        storage.setItem("jobs", updated);
+        return { ...state, jobs: updated };
+      });
+      return newJob;
     },
 
     // Clear cache

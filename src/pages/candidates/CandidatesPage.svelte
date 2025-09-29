@@ -14,22 +14,15 @@
 
   onMount(() => {
     candidateStore.loadCandidates();
-    
-    // Subscribe to candidate store changes
     const unsubscribe = candidateStore.subscribe((state) => {
       candidateStoreState = state;
       if (state.candidates.length > 0) {
         filteredCandidates = candidateStore.getFilteredCandidates();
       }
     });
-    
     return () => unsubscribe();
   });
 
-	// Update filtered candidates when filters change
-	$effect(() => {
-		filteredCandidates = candidateStore.getFilteredCandidates();
-	});
 
   function handleFiltersChange(newFilters: FilterOptions) {
     filters = newFilters;

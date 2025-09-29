@@ -45,12 +45,6 @@ function createCandidateStore() {
             priorityByJob: cachedPriority,
             loading: false,
           }));
-
-          // Load fresh data in background
-          setTimeout(() => {
-            update((state) => ({ ...state, candidates: mockCandidates }));
-            storage.setItem("candidates", mockCandidates);
-          }, 100);
         } else {
           // Load from mock data
           update((state) => ({
@@ -103,7 +97,14 @@ function createCandidateStore() {
         if (state.filters.stage && candidate.stage !== state.filters.stage) return false;
         if (state.filters.experience) {
           const { min, max } = state.filters.experience;
-          if (candidate.experience < min || candidate.experience > max) return false;
+          const exp = candidate.experience ?? 0;
+          if (min !== undefined && max === undefined) {
+            if (exp < min) return false;
+          } else if (min === undefined && max !== undefined) {
+            if (exp > max) return false;
+          } else if (min !== undefined && max !== undefined) {
+            if (exp < min || exp > max) return false;
+          }
         }
         if (state.filters.skills && state.filters.skills.length > 0) {
           const skillsLower = state.filters.skills.map((s) => s.toLowerCase());
@@ -220,6 +221,12 @@ function createCandidateStore() {
     getShortlistedCandidates: (): Candidate[] => {
       const state = get({ subscribe });
       return state.candidates.filter((candidate) => state.shortlist.includes(candidate.id));
+    },
+
+    // Get all candidates without applying filters (for local filtering in pages)
+    getAllCandidates: (): Candidate[] => {
+      const state = get({ subscribe });
+      return state.candidates;
     },
 
     // Clear cache

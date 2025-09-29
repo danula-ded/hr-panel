@@ -28,7 +28,9 @@
     <header class="app__header">
       <div class="app__header-content">
         <div class="app__logo">
-          <h1>HR Panel</h1>
+          <a href="/" class="app__logo-link" onclick={(e) => { e.preventDefault(); navigateTo("/"); }}>
+            <h1>HR Panel</h1>
+          </a>
         </div>
 
         <nav class="app__nav">
@@ -37,6 +39,9 @@
           </a>
           <a href="/candidates" class="app__nav-link" onclick={(e) => { e.preventDefault(); navigateTo("/candidates"); }}>
             Кандидаты
+          </a>
+          <a href="/shortlist" class="app__nav-link" onclick={(e) => { e.preventDefault(); navigateTo("/shortlist"); }}>
+            Шортлист
           </a>
         </nav>
 
@@ -49,7 +54,7 @@
           <span></span>
           <span></span>
         </button>
-        <button class="app__clear-cache" onclick={clearCache} aria-label="Clear cache">Очистить кэш</button>
+        <button class="app__clear-cache btn btn--secondary btn--sm" onclick={clearCache} aria-label="Clear cache">Очистить кэш</button>
       </div>
 
       {#if showMobileMenu}
@@ -60,6 +65,9 @@
           <a href="/candidates" class="app__mobile-nav-link" onclick={(e) => { e.preventDefault(); navigateTo("/candidates"); }}>
             Кандидаты
           </a>
+            <a href="/shortlist" class="app__mobile-nav-link" onclick={(e) => { e.preventDefault(); navigateTo("/shortlist"); }}>
+              Шортлист
+            </a>
         </nav>
       {/if}
     </header>

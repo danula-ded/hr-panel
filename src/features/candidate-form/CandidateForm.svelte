@@ -110,45 +110,19 @@ function handleSubmit(event: Event) {
 
   function handlePhoneInput(event: Event) {
     const target = event.target as HTMLInputElement;
-    let value = target.value.replace(/\D/g, "");
-
-    if (value.startsWith("8")) {
-      value = "7" + value.slice(1);
-    }
-
-    if (value.startsWith("7") && value.length <= 11) {
-      if (value.length >= 1) {
-        value = "+7";
-      }
-      if (value.length >= 2) {
-        value = "+7 (" + value.slice(2);
-      }
-      if (value.length >= 7) {
-        value = "+7 (" + value.slice(2, 5) + ") " + value.slice(5);
-      }
-      if (value.length >= 10) {
-        value =
-          "+7 (" +
-          value.slice(2, 5) +
-          ") " +
-          value.slice(5, 8) +
-          "-" +
-          value.slice(8);
-      }
-      if (value.length >= 12) {
-        value =
-          "+7 (" +
-          value.slice(2, 5) +
-          ") " +
-          value.slice(5, 8) +
-          "-" +
-          value.slice(8, 10) +
-          "-" +
-          value.slice(10);
-      }
-    }
-
-    phone = value;
+    const digits = target.value.replace(/\D/g, "");
+    // Build masked string progressively to allow typing
+    let value = digits;
+    if (value.startsWith("8")) value = "7" + value.slice(1);
+    if (!value.startsWith("7")) value = "7" + value; // ensure country
+    // +7 (XXX) XXX-XX-XX
+    let out = "+7";
+    if (value.length > 1) out += " (" + value.slice(1, Math.min(4, value.length)) ;
+    if (value.length >= 4) out += ") ";
+    if (value.length >= 4) out += value.slice(4, Math.min(7, value.length));
+    if (value.length >= 7) out += "-" + value.slice(7, Math.min(9, value.length));
+    if (value.length >= 9) out += "-" + value.slice(9, Math.min(11, value.length));
+    phone = out;
   }
 </script>
 

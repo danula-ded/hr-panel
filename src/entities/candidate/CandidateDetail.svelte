@@ -3,6 +3,8 @@
   import { Card, Button, Input } from "../../shared/ui";
   import { formatPhone, formatDateTime } from "../../shared/lib/utils";
   import { candidateStore } from "./store";
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
 
   interface Props {
     candidate: Candidate;
@@ -11,15 +13,23 @@
 
   let { candidate, class: className = "" }: Props = $props();
 
-	const isInShortlist = $derived(candidateStore.isInShortlist(candidate.id));
 	const phoneFormatted = $derived(formatPhone(candidate.phone));
+
+  // Ensure shortlist state is reactive on this page
+  let isInShortlist = $state(candidateStore.isInShortlist(candidate.id));
+  onMount(() => {
+    const unsubscribe = candidateStore.subscribe((state) => {
+      isInShortlist = state.shortlist.includes(candidate.id);
+    });
+    return () => unsubscribe();
+  });
 
   function handleToggleShortlist() {
     candidateStore.toggleShortlist(candidate.id);
   }
 
   function handleEdit() {
-    window.location.href = `/edit-candidate/${candidate.id}`;
+    goto(`/edit-candidate/${candidate.id}`);
   }
 
   function handleBack() {

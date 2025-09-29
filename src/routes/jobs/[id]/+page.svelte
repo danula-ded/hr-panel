@@ -24,8 +24,9 @@
 
       const cands = candidateStore.getFilteredCandidates();
       if (cands.length === 0) await candidateStore.loadCandidates();
-      candidateStore.setFilters({ ...(filters || {}), jobId: params.id });
-      filteredCandidates = candidateStore.getFilteredCandidates();
+      // Do not mutate global filters; compute local filtered list scoped by jobId
+      const all = candidateStore.getAllCandidates();
+      filteredCandidates = all.filter((c) => c.jobId === params.id);
     } catch (e) {
       error = e instanceof Error ? e.message : "Ошибка загрузки";
     } finally {
@@ -34,9 +35,34 @@
   });
 
   function handleFiltersChange(newFilters: FilterOptions) {
-    filters = { ...newFilters, jobId: params.id };
-    candidateStore.setFilters(filters);
-    filteredCandidates = candidateStore.getFilteredCandidates();
+    filters = { ...newFilters };
+    const all = candidateStore.getAllCandidates();
+    // local-only filters: search, stage, experience, skills
+    filteredCandidates = all
+      .filter((c) => c.jobId === params.id)
+      .filter((c) => {
+        if (filters.search) {
+          const s = filters.search.toLowerCase();
+          const hay = [c.firstName, c.lastName, c.email, c.position, c.skills.join(" ")]
+            .join(" ")
+            .toLowerCase();
+          if (!hay.includes(s)) return false;
+        }
+        if (filters.stage && c.stage !== filters.stage) return false;
+        if (filters.experience) {
+          const { min, max } = filters.experience;
+          const exp = c.experience ?? 0;
+          if (min !== undefined && max === undefined && exp < min) return false;
+          if (min === undefined && max !== undefined && exp > max) return false;
+          if (min !== undefined && max !== undefined && (exp < min || exp > max)) return false;
+        }
+        if (filters.skills && filters.skills.length > 0) {
+          const skillsLower = filters.skills.map((x) => x.toLowerCase());
+          const have = c.skills.map((x) => x.toLowerCase());
+          if (!skillsLower.every((s) => have.some((r) => r.includes(s)))) return false;
+        }
+        return true;
+      });
   }
 </script>
 
@@ -64,6 +90,7 @@
         <Card class="job-detail-page__job">
           <h2>{job.title}</h2>
           <p>{job.company} — {job.location}</p>
+          <p><strong>В шортлисте по вакансии:</strong> {filteredCandidates.filter(c => candidateStore.isInShortlist(c.id)).length}</p>
         </Card>
 
         {#if filteredCandidates.length === 0}

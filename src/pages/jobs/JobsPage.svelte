@@ -40,12 +40,22 @@
   function showMore() {
     visibleCount += 12;
   }
+
+  import { goto } from "$app/navigation";
+  function handleCreateJob() {
+    goto("/create-job");
+  }
 </script>
 
 <div class="jobs-page">
   <div class="jobs-page__header">
-    <h1>Вакансии</h1>
-    <p>Управление вакансиями и поиск кандидатов</p>
+    <div>
+      <h1>Вакансии</h1>
+      <p>Управление вакансиями и поиск кандидатов</p>
+    </div>
+    <div class="jobs-page__actions">
+      <Button variant="primary" onclick={handleCreateJob}>Создать вакансию</Button>
+    </div>
   </div>
 
   <div class="jobs-page__layout">
@@ -90,7 +100,10 @@
   }
 
   .jobs-page__header {
-    text-align: center;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
     margin-bottom: 2rem;
   }
 
@@ -106,6 +119,7 @@
     color: var(--color-text-muted);
     margin: 0;
   }
+  .jobs-page__actions { display:flex; align-items:center; }
 
   .jobs-page__layout {
     display: grid;
